@@ -16,6 +16,7 @@ import { dracula as theme } from "react-syntax-highlighter/dist/esm/styles/hljs"
 import styles from "./FileModal.module.css";
 
 import { useLocalFiles } from "../../hooks/useLocalFiles";
+import { getFileLanguage } from "../../utils/getFileLanguage";
 
 type FileModalProps = {
   //
@@ -24,27 +25,11 @@ type FileModalProps = {
 export const FileModal: React.FC<FileModalProps> = () => {
   const { currentFile, readFile } = useLocalFiles();
 
-  const [name, ext]: string[] = currentFile?.name?.split(".") || ["", ""];
-
-  let lang =
-    {
-      ts: "typescript",
-      js: "javascript",
-      json: "json",
-      cpp: "cpp",
-      h: "cpp",
-      md: "markdown",
-    }[ext] || "";
-
-  if (name.includes("CMake")) {
-    lang = "cpp";
-  } else if (name === ".gitignore") {
-    lang = "git";
-  }
-
   const onModalCloseHandler = () => {
     void readFile(null);
   };
+
+  const language = getFileLanguage(currentFile?.name);
 
   return (
     <Dialog
@@ -57,14 +42,14 @@ export const FileModal: React.FC<FileModalProps> = () => {
         <>
           <DialogTitle>{currentFile.name}</DialogTitle>
           <DialogContent>
-            {ext === "txt" ? (
+            {language === "text" ? (
               <Typography variant="caption" className={styles.fileContent}>
                 {currentFile.text}
               </Typography>
             ) : (
               <SyntaxHighlighter
                 showInlineLineNumbers
-                language={lang}
+                language={getFileLanguage(currentFile.name)}
                 style={theme}
               >
                 {currentFile.text}

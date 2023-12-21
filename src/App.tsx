@@ -7,6 +7,7 @@ import "./App.css";
 import { ErrorModal } from "./components/ErrorModal/ErrorModal";
 import { Explorer } from "./components/Explorer/Explorer";
 import { FileModal } from "./components/FileModal/FileModal";
+import { Footer } from "./components/Footer/Footer";
 import { LocalFilesProvider } from "./providers/LocalFiles.provider";
 
 const darkTheme = createTheme({
@@ -20,13 +21,12 @@ function App() {
     <LocalFilesProvider>
       <ThemeProvider theme={darkTheme}>
         <CssBaseline />
-        <div className="App">
-          <Container>
-            <Grid container mt={2}>
-              <Explorer />
-            </Grid>
-          </Container>
-        </div>
+        <Container>
+          <Grid container mt={2}>
+            <Explorer />
+          </Grid>
+        </Container>
+        <Footer />
         <FileModal />
         <ErrorModal />
       </ThemeProvider>

@@ -11,7 +11,7 @@ import {
   TableRow,
   TextField,
 } from "@mui/material";
-import React from "react";
+import React, { useRef } from "react";
 
 import { useLocalFiles } from "../../hooks/useLocalFiles";
 import { byteConverter } from "../../utils/byteConverter";
@@ -21,6 +21,8 @@ type ExplorerProps = {
 };
 
 export const Explorer: React.FC<ExplorerProps> = () => {
+  const ref = useRef<HTMLDivElement>();
+
   const {
     filesInDirectory,
     subDirectories,
@@ -38,14 +40,22 @@ export const Explorer: React.FC<ExplorerProps> = () => {
     void readDirectory(dir);
   };
 
+  const openDirectoryHandler = async () => {
+    await openDirectory();
+    if (ref?.current) {
+      ref.current?.blur();
+    }
+  };
+
   return (
     <>
       <Grid mb={2} md={12} item>
         <TextField
+          inputRef={ref}
           label="Directory"
           fullWidth
           value={directoriesPath.map((e) => e.name).join("/")}
-          onClick={openDirectory}
+          onClick={openDirectoryHandler}
         />
       </Grid>
       <Grid mb={2} md={12} item>
