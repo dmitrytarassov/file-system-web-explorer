@@ -1,6 +1,6 @@
 {
-  "short_name": "React App",
-  "name": "Create React App Sample",
+  "short_name": "FS Web Explorer",
+  "name": "File System Web Explorer",
   "icons": [
     {
       "src": "favicon.ico",
