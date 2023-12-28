@@ -1,12 +1,26 @@
-export function getFileLanguage(fileName?: string): string {
+type FileLanguage = {
+  type: "image" | "text" | "code";
+  language?: string;
+};
+
+export function getFileLanguage(fileName?: string, size = 0): FileLanguage {
   if (!fileName) {
-    return "text";
+    return { type: "text" };
   }
+
   const [ext, ...rest]: string[] = fileName.split(".").reverse() || ["", ""];
+  if (["png", "PNG", "jpg", "JPG", "webp", "svg", "gif", "ico"].includes(ext)) {
+    return { type: "image" };
+  }
+
+  // 10 Kb
+  if (size > 1024 * 10) {
+    return { type: "text" };
+  }
 
   const name = rest.join(".");
 
-  let lang =
+  let language =
     {
       ts: "typescript",
       js: "javascript",
@@ -14,14 +28,16 @@ export function getFileLanguage(fileName?: string): string {
       cpp: "cpp",
       h: "cpp",
       md: "markdown",
-      txt: "text",
     }[ext] || "";
 
   if (name.includes("CMake")) {
-    lang = "cpp";
+    language = "cpp";
   } else if (name === ".gitignore") {
-    lang = "git";
+    language = "git";
   }
 
-  return lang;
+  return {
+    type: "code",
+    language,
+  };
 }

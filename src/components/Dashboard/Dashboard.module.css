@@ -1,0 +1,70 @@
+.main {
+    display: grid;
+    grid-template-columns: 320px 1fr;
+    grid-template-rows: 1fr 3rem;
+    grid-gap: 0.5rem;
+    padding: 0.5rem;
+    height: 100vh;
+    width: 100vw;
+}
+
+nav {
+    overflow: auto;
+    background: var(--color-gray-main);
+}
+
+nav.empty {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.file {
+    overflow: hidden;
+    overflow-y: auto;
+}
+
+.file pre {
+    min-height: 100%;
+    overflow-y: visible!important;
+    margin: 0;
+}
+
+.footer {
+    background: var(--color-gray-main);
+}
+
+.path {
+    border-bottom-right-radius: 0.25rem;
+    display: flex;
+    align-items: center;
+    padding: 1rem;
+}
+
+.path a + a {
+    margin-left: 1rem;
+}
+
+.links {
+    border-bottom-left-radius: 0.25rem;
+    display: flex;
+    align-items: center;
+    padding: 1rem;
+}
+
+/* .links a div.MuiGrid-container */
+.links a > div > div {
+    display: flex;
+}
+
+.links a + a {
+    margin-left: 1rem;
+}
+
+.editor {
+    border-top-right-radius: 0.25rem;
+}
+
+.nav {
+    border-top-left-radius: 0.25rem;
+}

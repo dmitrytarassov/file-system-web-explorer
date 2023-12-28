@@ -1,104 +1,107 @@
 "use client";
-import React, { createContext, ReactNode } from "react";
+import * as idb from "idb-keyval";
+import React, { createContext, ReactNode, useEffect } from "react";
 
-import { File } from "../dtos/File";
 import { OpenedFile } from "../dtos/OpenedFile";
+import { AsyncTyped } from "../dtos/common";
+import { Dir } from "../utils/Dir";
+import { empty, emptyAsync } from "../utils/empty";
+import { getErrorDescription } from "../utils/getErrorDescription";
 
 export interface ILocalFilesProviderContext {
-  readDirectory: (dirHandle: FileSystemDirectoryHandle) => Promise<void>;
-  openDirectory: () => Promise<void>;
+  readDirectory: (dirHandle: Dir) => Promise<void>;
+  showDirectoryPicker: () => Promise<void>;
   readFile: (fileHandle: FileSystemFileHandle | null) => Promise<void>;
-  filesInDirectory: File[];
-  subDirectories: FileSystemDirectoryHandle[];
-  directoriesPath: FileSystemDirectoryHandle[];
   currentFile: OpenedFile | null;
   error: string | null;
   discardError: () => void;
+  dir: Dir | undefined;
+  recentlyOpenedDirectories: Set<FileSystemDirectoryHandle>;
+  updateFileWithContent: (
+    handle: FileSystemFileHandle,
+    content: string
+  ) => Promise<void>;
+  openRecentDir: AsyncTyped<FileSystemDirectoryHandle, void>;
+  projectOpenedFiles: Map<Dir, OpenedFile>;
 }
 
 export const LocalFilesProviderContext =
   createContext<ILocalFilesProviderContext>({
-    readDirectory: async () => {
-      //
-    },
-    openDirectory: async () => {
-      //
-    },
-    readFile: async () => {
-      //
-    },
-    filesInDirectory: [],
-    subDirectories: [],
-    directoriesPath: [],
+    readDirectory: emptyAsync,
+    showDirectoryPicker: emptyAsync,
+    readFile: emptyAsync,
     currentFile: null,
     error: null,
-    discardError: () => {
-      //
-    },
+    discardError: empty,
+    dir: undefined,
+    recentlyOpenedDirectories: new Set(),
+    updateFileWithContent: emptyAsync,
+    openRecentDir: emptyAsync,
+    projectOpenedFiles: new Map(),
   });
 
 export const LocalFilesProvider = ({ children }: { children: ReactNode }) => {
-  const [filesInDirectory, set_filesInDirectory] = React.useState<
-    ILocalFilesProviderContext["filesInDirectory"]
-  >([]);
-  const [subDirectories, set_subDirectories] = React.useState<
-    ILocalFilesProviderContext["subDirectories"]
-  >([]);
-  const [directoriesPath, set_directoriesPath] = React.useState<
-    ILocalFilesProviderContext["directoriesPath"]
-  >([]);
+  const [root, set_root] = React.useState<string>("");
   const [currentFile, set_currentFile] =
     React.useState<ILocalFilesProviderContext["currentFile"]>(null);
   const [error, set_error] =
     React.useState<ILocalFilesProviderContext["error"]>(null);
+  const [dir, set_dir] = React.useState<ILocalFilesProviderContext["dir"]>();
+  const [recentlyOpenedDirectories, set_recentlyOpenedDirectories] =
+    React.useState<ILocalFilesProviderContext["recentlyOpenedDirectories"]>(
+      new Set()
+    );
+  const [projectOpenedFiles, set_projectOpenedFiles] = React.useState<
+    ILocalFilesProviderContext["projectOpenedFiles"]
+  >(new Map());
+
+  const updateFileWithContent: ILocalFilesProviderContext["updateFileWithContent"] =
+    async (handle, content) => {
+      // Create a FileSystemWritableFileStream to write to.
+      const writable = await handle.createWritable();
+      // Write the contents of the file to the stream.
+      await writable.write(content);
+      // Close the file and write the contents to disk.
+      await writable.close();
+
+      if (dir) {
+        readDirectory(dir);
+      }
+
+      if (currentFile) {
+        readFile(currentFile.handle);
+      }
+    };
 
   const readDirectory: ILocalFilesProviderContext["readDirectory"] = async (
-    dirHandle
+    dir
   ) => {
-    const filesInDirectory: File[] = [];
-    const subDirectories: FileSystemDirectoryHandle[] = [];
-
-    for await (const entry of dirHandle.values()) {
-      if (entry.kind === "file") {
-        const file = await entry.getFile();
-        filesInDirectory.push({
-          name: entry.name,
-          lastModified: new Date(file.lastModified).toUTCString(),
-          size: file.size,
-          entry,
-        });
-      } else if (entry.kind === "directory") {
-        subDirectories.push(entry);
-      }
-    }
-
-    const newDirectoriesPath: FileSystemDirectoryHandle[] = [];
-    for (const dir of directoriesPath) {
-      if (!(await dir.isSameEntry(dirHandle))) {
-        newDirectoriesPath.push(dir);
-      } else {
-        break;
-      }
-    }
-
-    newDirectoriesPath.push(dirHandle);
-    set_directoriesPath(newDirectoriesPath);
-
-    set_filesInDirectory(filesInDirectory);
-    set_subDirectories(subDirectories);
+    await idb.set("dir", dir.directoryHandle);
+    console.log(dir);
+    await dir.load();
+    set_dir(dir);
   };
 
-  const openDirectory: ILocalFilesProviderContext["openDirectory"] =
+  const showDirectoryPicker: ILocalFilesProviderContext["showDirectoryPicker"] =
     async () => {
-      const _directoriesPath = directoriesPath;
       try {
-        set_directoriesPath([]);
         const dirHandle = await window.showDirectoryPicker();
-        await readDirectory(dirHandle);
+        const dir = new Dir(dirHandle);
+        set_root(dir.directoryHandle.name);
+        set_recentlyOpenedDirectories((set) => {
+          set.add(dir.directoryHandle);
+          idb.set("recents", set);
+          return set;
+        });
+
+        await readDirectory(dir);
       } catch (e: unknown) {
         const error = e as Error;
-        set_directoriesPath(_directoriesPath);
-        set_error(error?.message || error?.toString() || "Undefined error");
+        set_error(
+          getErrorDescription(
+            error?.message || error?.toString() || "Undefined error"
+          )
+        );
         console.log(e);
       }
     };
@@ -109,8 +112,11 @@ export const LocalFilesProvider = ({ children }: { children: ReactNode }) => {
       const text = await file.text();
 
       set_currentFile({
+        entity: file,
         name: file.name,
         text,
+        size: file.size,
+        handle: entry,
       });
     } else {
       set_currentFile(null);
@@ -121,18 +127,80 @@ export const LocalFilesProvider = ({ children }: { children: ReactNode }) => {
     set_error(null);
   };
 
+  const loadFromIdb = async () => {
+    try {
+      const dirs = await idb.get("recents");
+      if (dirs) {
+        set_recentlyOpenedDirectories(dirs);
+      }
+    } catch (e) {
+      console.log(e);
+      // do nothing?
+    }
+  };
+
+  useEffect(() => {
+    void loadFromIdb();
+  }, []);
+
+  const openRecentDir: ILocalFilesProviderContext["openRecentDir"] = async (
+    handle
+  ) => {
+    try {
+      const result = await handle.requestPermission({ mode: "readwrite" });
+      if (result === "granted") {
+        const dir = new Dir(handle);
+        await readDirectory(dir);
+        set_root(dir.directoryHandle.name);
+        console.log(`file_${dir.directoryHandle.name}`);
+        const file = await idb.get(`file_${dir.directoryHandle.name}`);
+        if (file) {
+          readFile(file.handle);
+        }
+        console.log(file);
+      } else {
+        throw new Error("Rejected");
+      }
+    } catch (e: unknown) {
+      console.log(e);
+      const error = e as Error;
+      set_error(
+        getErrorDescription(
+          error?.message || error?.toString() || "Undefined error"
+        )
+      );
+    }
+  };
+
+  React.useEffect(() => {
+    if (dir && currentFile) {
+      set_projectOpenedFiles((map) => {
+        map.set(dir, currentFile);
+        console.log(`file_${root}`);
+        void idb.set(`file_${root}`, currentFile);
+        return map;
+      });
+    }
+  }, [currentFile, dir]);
+
+  // useEffect(() => {
+  //   idb.clear();
+  // }, []);
+
   return (
     <LocalFilesProviderContext.Provider
       value={{
+        dir,
         readDirectory,
-        openDirectory,
+        showDirectoryPicker,
         readFile,
-        filesInDirectory,
-        subDirectories,
-        directoriesPath,
         currentFile,
         error,
         discardError,
+        recentlyOpenedDirectories,
+        updateFileWithContent,
+        openRecentDir,
+        projectOpenedFiles,
       }}
     >
       {children}

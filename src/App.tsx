@@ -1,36 +1,32 @@
-import { Container, Grid } from "@mui/material";
 import CssBaseline from "@mui/material/CssBaseline";
 import { createTheme, ThemeProvider } from "@mui/material/styles";
 import React from "react";
 
 import "./App.css";
+import { Dashboard } from "./components/Dashboard/Dashboard";
 import { ErrorModal } from "./components/ErrorModal/ErrorModal";
-import { Explorer } from "./components/Explorer/Explorer";
-import { FileModal } from "./components/FileModal/FileModal";
-import { Footer } from "./components/Footer/Footer";
+import { IdbProvider } from "./providers/Idb.provider";
 import { LocalFilesProvider } from "./providers/LocalFiles.provider";
 
 const darkTheme = createTheme({
   palette: {
     mode: "dark",
   },
+  typography: {},
 });
 
 function App() {
   return (
-    <LocalFilesProvider>
-      <ThemeProvider theme={darkTheme}>
-        <CssBaseline />
-        <Container>
-          <Grid container mt={2}>
-            <Explorer />
-          </Grid>
-        </Container>
-        <Footer />
-        <FileModal />
-        <ErrorModal />
-      </ThemeProvider>
-    </LocalFilesProvider>
+    <IdbProvider>
+      <LocalFilesProvider>
+        <ThemeProvider theme={darkTheme}>
+          <CssBaseline />
+          <Dashboard />
+
+          <ErrorModal />
+        </ThemeProvider>
+      </LocalFilesProvider>
+    </IdbProvider>
   );
 }
 
