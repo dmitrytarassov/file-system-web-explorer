@@ -13,6 +13,11 @@ const darkTheme = createTheme({
     mode: "dark",
   },
   typography: {},
+  components: {
+    MuiListItemButton: {
+      styleOverrides: {},
+    },
+  },
 });
 
 function App() {

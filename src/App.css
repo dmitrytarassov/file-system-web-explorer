@@ -1,3 +1,41 @@
 a {
     cursor: pointer!important;
 }
+
+.editor_cursor {
+    position: relative;
+}
+
+.editor_cursor::after {
+    content: "";
+    background-color: limegreen;
+    position: absolute;
+    left: 0;
+    width: 2px;
+    height: 100%;
+    top: 0;
+
+    animation: cursor 1s infinite;
+    animation-timing-function: step-start;
+    animation-delay: 1s;
+    animation-fill-mode: both;
+}
+
+.editor_selection {
+    background: darkslategrey;
+}
+
+@keyframes cursor {
+    from, to {
+        opacity: 1;
+    }
+
+    50% {
+        opacity: 0;
+    }
+}
+
+/*!* Chrome, Edge, and Safari *!*/
+/**::-webkit-scrollbar {*/
+/*    width: 0.5rem;*/
+/*}*/

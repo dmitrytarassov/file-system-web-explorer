@@ -24,11 +24,11 @@ nav.empty {
     overflow-y: auto;
 }
 
-.file pre {
-    min-height: 100%;
-    overflow-y: visible!important;
-    margin: 0;
-}
+/*.file pre {*/
+/*    min-height: 100%;*/
+/*    overflow-y: visible!important;*/
+/*    margin: 0;*/
+/*}*/
 
 .footer {
     background: var(--color-gray-main);

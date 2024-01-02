@@ -1,7 +1,7 @@
 "use client";
 
 import { Cancel, Restore, Save } from "@mui/icons-material";
-import { Button, ButtonGroup, Grid, Typography } from "@mui/material";
+import { Button, ButtonGroup, Typography } from "@mui/material";
 import React from "react";
 import SyntaxHighlighter from "react-syntax-highlighter";
 import { dracula as theme } from "react-syntax-highlighter/dist/esm/styles/hljs";
@@ -13,18 +13,15 @@ import styles from "./styles.module.css";
 
 import { useFileEditor } from "../../hooks/useFileEditor";
 import { useLocalFiles } from "../../hooks/useLocalFiles";
-import { getFileLanguage } from "../../utils/getFileLanguage";
 
 type FileContentProps = {
   //
 };
 
 export const FileContent: React.FC<FileContentProps> = () => {
-  const { currentFile, readFile } = useLocalFiles();
+  const { currentFile } = useLocalFiles();
   const { isModified, isEditing, enableEditing, disableEditing, save } =
     useFileEditor();
-
-  const language = getFileLanguage(currentFile?.name, currentFile?.size);
 
   return (
     <>
@@ -59,14 +56,14 @@ export const FileContent: React.FC<FileContentProps> = () => {
               </Button>
             </ButtonGroup>
           </div>
-          {language.type === "image" && (
+          {currentFile.type === "image" && (
             <FileImage
               fileName={currentFile.name}
               fileData={currentFile.text}
               file={currentFile.entity}
             />
           )}
-          {(language.type === "text" || isEditing) && (
+          {(currentFile.type === "text" || isEditing) && (
             <Editor>
               <pre
                 className={styles.fileContent}
@@ -80,11 +77,11 @@ export const FileContent: React.FC<FileContentProps> = () => {
             </Editor>
           )}
 
-          {language.type === "code" && !isEditing && (
+          {currentFile.type === "code" && !isEditing && (
             <div onClick={enableEditing}>
               <SyntaxHighlighter
                 showInlineLineNumbers
-                language={language.language}
+                language={currentFile.language}
                 style={theme}
                 showLineNumbers
               >

@@ -7,6 +7,7 @@ import { AsyncTyped } from "../dtos/common";
 import { Dir } from "../utils/Dir";
 import { empty, emptyAsync } from "../utils/empty";
 import { getErrorDescription } from "../utils/getErrorDescription";
+import { getFileInfo } from "../utils/getFileInfo";
 
 export interface ILocalFilesProviderContext {
   readDirectory: (dirHandle: Dir) => Promise<void>;
@@ -117,6 +118,7 @@ export const LocalFilesProvider = ({ children }: { children: ReactNode }) => {
         text,
         size: file.size,
         handle: entry,
+        ...getFileInfo(file.name),
       });
     } else {
       set_currentFile(null);
