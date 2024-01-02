@@ -2,7 +2,7 @@ import * as he from "he";
 
 import { IPlugin } from "../../dtos/IPlugin";
 
-export const hePlugin: IPlugin = (text, options) => {
+export const hePlugin: IPlugin = (text, options, originalText) => {
   const optionValues = {
     cursorPosition:
       typeof options?.cursorPosition !== "undefined"
@@ -43,9 +43,11 @@ export const hePlugin: IPlugin = (text, options) => {
   return {
     text: newText,
     options: {
+      ...options,
       cursorPosition,
       selectionStart,
       selectionEnd,
     },
+    originalText,
   };
 };

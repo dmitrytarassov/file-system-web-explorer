@@ -1,5 +1,6 @@
 "use client";
 
+import classNames from "classnames";
 import React, { useRef } from "react";
 
 import styles from "./styles.module.css";
@@ -15,7 +16,7 @@ export const TextEditor: React.FC<TextEditorProps> = () => {
   const ref = useRef<HTMLDivElement>();
   const fieldRef = useRef<HTMLTextAreaElement>();
 
-  const { editorText, realText, editor } = useFileEditor();
+  const { editorText, realText, editor, preview } = useFileEditor();
 
   const onChangeHandler: React.ChangeEventHandler<HTMLTextAreaElement> = (
     e
@@ -79,22 +80,36 @@ export const TextEditor: React.FC<TextEditorProps> = () => {
     }
   }, [editorText]);
 
+  console.log(preview);
+
   return (
-    <div className={styles.textEditorContainer}>
-      <div
-        className={styles.textView}
-        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-        // @ts-ignore
-        ref={ref}
-        dangerouslySetInnerHTML={{ __html: `${editorText}` }}
-      />
-      <textarea
-        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-        // @ts-ignore
-        ref={fieldRef}
-        value={realText}
-        onChange={onChangeHandler}
-      />
+    <div
+      className={classNames(styles.container, {
+        [styles.splitView]: !!preview,
+      })}
+    >
+      <div className={styles.textEditorContainer}>
+        <div
+          className={styles.textView}
+          // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+          // @ts-ignore
+          ref={ref}
+          dangerouslySetInnerHTML={{ __html: `${editorText}` }}
+        />
+        <textarea
+          // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+          // @ts-ignore
+          ref={fieldRef}
+          value={realText}
+          onChange={onChangeHandler}
+        />
+      </div>
+      {preview && (
+        <div
+          className={styles.textEditorContainer}
+          dangerouslySetInnerHTML={{ __html: preview }}
+        />
+      )}
     </div>
   );
 };

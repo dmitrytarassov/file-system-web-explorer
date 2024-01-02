@@ -1,0 +1,44 @@
+.md_container {
+    display: flex;
+    width: 100%;
+    height: 100%;
+    overflow: auto;
+    flex-direction: column;
+}
+
+.md_container h1, .md_container h2, .md_container h3, .md_container p, .md_container ul {
+    margin-bottom: 1em;
+}
+
+.md_container h1 {
+    font-size: 1.5rem;
+    margin-top: 0;
+}
+
+.md_container h2 {
+    font-size: 1.375rem;
+    margin-top: 0;
+}
+
+.md_container h3 {
+    font-size: 1.25rem;
+    margin-top: 0;
+}
+
+.md_container p {
+    margin-top: 0;
+    font-size: 1rem;
+}
+
+.md_container ul {
+    padding-inline-start: 1rem;
+    margin-top: 0;
+}
+
+.md_container a {
+    color: var(--color-link);
+}
+
+.md_container a:hover {
+    color: var(--color-link-hover);
+}

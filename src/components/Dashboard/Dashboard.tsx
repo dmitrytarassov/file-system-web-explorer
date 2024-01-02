@@ -1,6 +1,5 @@
 "use client";
 
-import { Container, Grid } from "@mui/material";
 import classNames from "classnames";
 import React from "react";
 
@@ -9,10 +8,8 @@ import styles from "./Dashboard.module.css";
 import { useLocalFiles } from "../../hooks/useLocalFiles";
 import { ExplorerContextMenuProvider } from "../../providers/ExplorerContextMenu.provider";
 import { FileEditorProvider } from "../../providers/FileEditor.provider";
-import { PluginsProvider } from "../../providers/Plugins.provider";
 import { DirectoryExplorer } from "../DirectoryExplorer/DirectoryExplorer";
 import { DirectoryExplorerContextMenu } from "../DirectoryExplorer/DirectoryExplorerContextMenu";
-import { FileContent } from "../FileContent/FileContent";
 import { FileContent2 } from "../FileContent2/FileContent2";
 import { Footer } from "../Footer/Footer";
 import { Path } from "../Path/Path";
@@ -33,11 +30,9 @@ export const Dashboard: React.FC<DashboardProps> = () => {
         </ExplorerContextMenuProvider>
       </nav>
       <section className={classNames(styles.editor, styles.file)}>
-        <PluginsProvider>
-          <FileEditorProvider>
-            <FileContent2 />
-          </FileEditorProvider>
-        </PluginsProvider>
+        <FileEditorProvider>
+          <FileContent2 />
+        </FileEditorProvider>
       </section>
       <div className={classNames(styles.links, styles.footer)}>
         <Footer />

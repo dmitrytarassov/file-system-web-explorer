@@ -4,7 +4,7 @@ const addCursor = (text: string): string => {
   return text + '<span class="editor_cursor"></span>';
 };
 
-export const cursorPlugin: IPlugin = (text, options) => {
+export const cursorPlugin: IPlugin = (text, options, originalText) => {
   const cursorPosition =
     typeof options.cursorPosition !== "undefined" ? options.cursorPosition : -1;
   const selectionStart =
@@ -36,5 +36,6 @@ export const cursorPlugin: IPlugin = (text, options) => {
   return {
     text: newText,
     options,
+    originalText,
   };
 };

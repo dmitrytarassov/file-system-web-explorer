@@ -1,7 +1,6 @@
-import * as he from "he";
-
 import { cursorPlugin } from "./plugins/cursorPlugin";
 import { hePlugin } from "./plugins/hePlugin";
+import { mdPreviewPlugin } from "./plugins/md/mdPreviewPlugin";
 
 import { IPlugin } from "../dtos/IPlugin";
 
@@ -10,6 +9,7 @@ interface Watcher {
     text: string;
     originalText: string;
     base: string;
+    preview?: string;
   }): void | Promise<void>;
 }
 
@@ -19,9 +19,13 @@ export class Editor {
   private cursorPosition = 0;
   private selectionStart = -1;
   private selectionEnd = -1;
-  private plugins: IPlugin[] = [hePlugin, cursorPlugin];
+  private plugins: IPlugin[] = [hePlugin, cursorPlugin, mdPreviewPlugin];
 
-  constructor(private base: string, watcher?: Watcher) {
+  constructor(
+    private base: string,
+    private language: string,
+    watcher?: Watcher
+  ) {
     this.text = base;
 
     if (watcher) {
@@ -50,31 +54,20 @@ export class Editor {
     let cursorPosition = this.cursorPosition;
     let selectionStart = this.selectionStart;
     let selectionEnd = this.selectionEnd;
-    //
-    // for (const index in [...this.text]) {
-    //   const letter = this.text[index];
-    //   const encoded = he.encode(letter);
-    //   const diff = encoded.length - letter.length;
-    //
-    //   if (+index < this.cursorPosition) {
-    //     cursorPosition += diff;
-    //   }
-    //   if (+index < this.selectionStart) {
-    //     selectionStart += diff;
-    //   }
-    //   if (+index <= this.selectionEnd) {
-    //     selectionEnd += diff;
-    //   }
-    //
-    //   text += encoded;
-    // }
+    let preview: string | undefined;
+    const originalText = text;
 
     for (const plugin of this.plugins) {
-      const result = plugin(text, {
-        cursorPosition,
-        selectionStart,
-        selectionEnd,
-      });
+      const result = plugin(
+        text,
+        {
+          cursorPosition,
+          selectionStart,
+          selectionEnd,
+          language: this.language,
+        },
+        originalText
+      );
       text = result.text;
       if (result.options?.cursorPosition) {
         cursorPosition = result.options?.cursorPosition;
@@ -85,6 +78,7 @@ export class Editor {
       if (result.options?.selectionEnd) {
         selectionEnd = result.options?.selectionEnd;
       }
+      preview = result.previewText;
     }
 
     for (const watcher of this.watchers) {
@@ -92,6 +86,7 @@ export class Editor {
         text,
         originalText: this.text,
         base: this.base,
+        preview,
       });
     }
   }
