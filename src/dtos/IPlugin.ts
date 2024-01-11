@@ -7,7 +7,8 @@ export interface IPlugin {
       selectionStart: number;
       selectionEnd: number;
     },
-    originalText: string
+    originalText: string,
+    JS_AST?: any
   ): {
     text: string;
     options: {
@@ -18,5 +19,6 @@ export interface IPlugin {
     };
     previewText?: string;
     originalText: string;
+    JS_AST?: any;
   };
 }

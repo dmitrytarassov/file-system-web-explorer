@@ -7,7 +7,9 @@ module.exports = {
 
             webpackConfig.resolve.fallback = {
                 ...webpackConfig.resolve.fallback,
-                "timers": require.resolve('timers-browserify')
+                "timers": require.resolve('timers-browserify'),
+                "path": require.resolve("path-browserify"),
+                "fs": false
             }
 
             return webpackConfig;

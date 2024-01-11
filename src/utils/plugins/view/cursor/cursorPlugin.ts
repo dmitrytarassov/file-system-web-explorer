@@ -1,4 +1,4 @@
-import { IPlugin } from "../../dtos/IPlugin";
+import { IPlugin } from "../../../../dtos/IPlugin";
 
 const addCursor = (text: string): string => {
   return text + '<span class="editor_cursor"></span>';

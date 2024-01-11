@@ -33,11 +33,14 @@ export function getFileInfo(fileName?: string, size = 0): FileInfo {
   let language =
     {
       ts: "typescript",
+      tsx: "typescript",
       js: "javascript",
       json: "json",
       cpp: "cpp",
       h: "cpp",
       md: "markdown",
+      css: "css",
+      scss: "css",
     }[extension] || "";
 
   if (name.includes("CMake")) {

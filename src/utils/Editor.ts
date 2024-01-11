@@ -1,6 +1,8 @@
-import { cursorPlugin } from "./plugins/cursorPlugin";
-import { hePlugin } from "./plugins/hePlugin";
+import { astPlugin } from "./plugins/js/astPlugin";
 import { mdPreviewPlugin } from "./plugins/md/mdPreviewPlugin";
+import { cursorPlugin } from "./plugins/view/cursor/cursorPlugin";
+import { hePlugin } from "./plugins/view/highlight/hePlugin";
+import { highLighterPlugin } from "./plugins/view/highlighter/hightLighterPlugin";
 
 import { IPlugin } from "../dtos/IPlugin";
 
@@ -19,7 +21,13 @@ export class Editor {
   private cursorPosition = 0;
   private selectionStart = -1;
   private selectionEnd = -1;
-  private plugins: IPlugin[] = [hePlugin, cursorPlugin, mdPreviewPlugin];
+  private plugins: IPlugin[] = [
+    // astPlugin,
+    highLighterPlugin,
+    hePlugin,
+    // cursorPlugin,
+    mdPreviewPlugin,
+  ];
 
   constructor(
     private base: string,
