@@ -70,7 +70,7 @@ export const LocalFilesProvider = ({ children }: { children: ReactNode }) => {
       }
 
       if (currentFile) {
-        readFile(currentFile.handle);
+        readFile(handle);
       }
     };
 

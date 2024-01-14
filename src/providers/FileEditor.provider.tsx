@@ -1,10 +1,12 @@
 "use client";
+import { handle } from "hast-util-to-html/lib/handle";
 import React, { createContext, ReactNode } from "react";
 
 import { AsyncVoidFn } from "../dtos/common";
 import { useLocalFiles } from "../hooks/useLocalFiles";
 import { Editor } from "../utils/Editor";
-import { emptyAsync } from "../utils/empty";
+import { empty, emptyAsync } from "../utils/empty";
+import { KeyboardListener } from "../utils/keyboardListener";
 
 export interface IFileEditorProviderContext {
   save: AsyncVoidFn;
@@ -43,9 +45,22 @@ export const FileEditorProvider = ({ children }: { children: ReactNode }) => {
     }
   }, [currentFile]);
 
+  const saveFile =
+    (handle: FileSystemFileHandle, content: string) => async () => {
+      await updateFileWithContent(handle, content);
+    };
+
   React.useEffect(() => {
-    //
-  }, []);
+    const keyboardListener = KeyboardListener.getInstance();
+    const handler = currentFile?.handle
+      ? saveFile(currentFile.handle, realText)
+      : empty;
+    keyboardListener.on("s", [["command"], ["shift", "alt"]], handler);
+
+    return () => {
+      keyboardListener.off("s", [["command"], ["shift", "alt"]], handler);
+    };
+  }, [currentFile?.handle, realText]);
 
   const save = async () => {
     if (currentFile) {
