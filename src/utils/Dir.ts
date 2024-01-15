@@ -32,9 +32,14 @@ export class Dir {
       }
     }
 
-    this.files = filesInDirectory;
+    this.files = filesInDirectory.sort((a, b) =>
+      a.name.toLowerCase() > b.name.toLowerCase() ? 1 : -1
+    );
     this.subDirs = subDirectories.sort((a, b) =>
-      a.directoryHandle.name > b.directoryHandle.name ? 1 : -1
+      a.directoryHandle.name.toLowerCase() >
+      b.directoryHandle.name.toLowerCase()
+        ? 1
+        : -1
     );
     Dir.resetCurrent();
     Dir.currentDir = this;

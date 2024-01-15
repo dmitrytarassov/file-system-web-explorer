@@ -14,6 +14,7 @@ export interface IFileEditorProviderContext {
   editorText: string;
   realText: string;
   preview?: string;
+  isModified: boolean;
 }
 
 export const FileEditorProviderContext =
@@ -21,6 +22,7 @@ export const FileEditorProviderContext =
     save: emptyAsync,
     editorText: "",
     realText: "",
+    isModified: false,
   });
 
 export const FileEditorProvider = ({ children }: { children: ReactNode }) => {
@@ -28,18 +30,23 @@ export const FileEditorProvider = ({ children }: { children: ReactNode }) => {
   const [editor, set_editor] = React.useState<Editor>();
   const [editorText, set_editorText] = React.useState<string>("");
   const [preview, set_preview] = React.useState<string | undefined>();
+  const [isModified, set_isModified] = React.useState<boolean>(false);
 
   const { currentFile, updateFileWithContent } = useLocalFiles();
 
   React.useEffect(() => {
     if (currentFile) {
-      set_editor(
-        new Editor(currentFile.text, currentFile.language || "", (data) => {
+      const editor = new Editor(
+        currentFile.text,
+        currentFile.language || "",
+        (data) => {
           set_editorText(data.text);
           set_realText(data.originalText);
           set_preview(data.preview);
-        })
+          set_isModified(data.originalText !== data.base);
+        }
       );
+      set_editor(editor);
     } else {
       set_editor(undefined);
     }
@@ -76,6 +83,7 @@ export const FileEditorProvider = ({ children }: { children: ReactNode }) => {
         editorText,
         realText,
         preview,
+        isModified,
       }}
     >
       {children}

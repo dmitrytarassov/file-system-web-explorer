@@ -23,23 +23,23 @@ export const Dashboard: React.FC<DashboardProps> = () => {
 
   return (
     <main className={styles.main}>
-      <nav className={classNames({ [styles.empty]: !dir }, styles.nav)}>
-        <ExplorerContextMenuProvider>
-          <DirectoryExplorer />
-          <DirectoryExplorerContextMenu />
-        </ExplorerContextMenuProvider>
-      </nav>
-      <section className={classNames(styles.editor, styles.file)}>
-        <FileEditorProvider>
+      <FileEditorProvider>
+        <nav className={classNames({ [styles.empty]: !dir }, styles.nav)}>
+          <ExplorerContextMenuProvider>
+            <DirectoryExplorer />
+            <DirectoryExplorerContextMenu />
+          </ExplorerContextMenuProvider>
+        </nav>
+        <section className={classNames(styles.editor, styles.file)}>
           <FileContent2 />
-        </FileEditorProvider>
-      </section>
-      <div className={classNames(styles.links, styles.footer)}>
-        <Footer />
-      </div>
-      <div className={classNames(styles.path, styles.footer)}>
-        <Path />
-      </div>
+        </section>
+        <div className={classNames(styles.links, styles.footer)}>
+          <Footer />
+        </div>
+        <div className={classNames(styles.path, styles.footer)}>
+          <Path />
+        </div>
+      </FileEditorProvider>
     </main>
   );
 };

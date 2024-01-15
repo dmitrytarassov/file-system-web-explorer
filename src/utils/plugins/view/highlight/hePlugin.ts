@@ -14,6 +14,7 @@ export const hePlugin: IPlugin = (text, options, originalText) => {
     html: "html",
     css: "css",
   }[options.language];
+  console.log(options.language);
   const newText = lang ? toHtml(lowlight.highlight(lang, text)) : text;
 
   return {

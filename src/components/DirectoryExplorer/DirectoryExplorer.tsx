@@ -12,13 +12,16 @@ import {
   ListItemSecondaryAction,
   ListItemText,
 } from "@mui/material";
+import classNames from "classnames";
 import React from "react";
 
-import styles from "./DirectoryExplorer.module.css";
+import styles from "./DirectoryExplorer.module.scss";
 
 import { useExplorerContextMenu } from "../../hooks/useExplorerContextMenu";
+import { useFileEditor } from "../../hooks/useFileEditor";
 import { useLocalFiles } from "../../hooks/useLocalFiles";
 import { Dir } from "../../utils/Dir";
+import { LanguageLogo } from "../LanguageLogo/LanguageLogo";
 
 type DirectoryExplorerProps = {
   //
@@ -28,6 +31,7 @@ export const DirectoryExplorer: React.FC<DirectoryExplorerProps> = () => {
   const { open } = useExplorerContextMenu();
   const { readDirectory, showDirectoryPicker, readFile, dir, currentFile } =
     useLocalFiles();
+  const { isModified } = useFileEditor();
 
   const openDir = (dir: Dir) => () => {
     readDirectory(dir);
@@ -43,47 +47,48 @@ export const DirectoryExplorer: React.FC<DirectoryExplorerProps> = () => {
         >
           <List className={styles.list}>
             {dir.parent && (
-              <ListItem disablePadding onClick={openDir(dir.parent)}>
-                <ListItemButton>
-                  <ListItemIcon>
-                    <Folder />
-                  </ListItemIcon>
-                  <ListItemText primary="..." />
-                </ListItemButton>
-              </ListItem>
+              <div className={styles.element} onClick={openDir(dir.parent)}>
+                <div className={styles.icon}>..</div>
+                <div className={styles.name}>
+                  {dir.parent.directoryHandle.name}
+                </div>
+              </div>
             )}
+
             {dir.subDirs.map((dir) => (
-              <ListItem
-                disablePadding
+              <div
+                className={styles.element}
                 key={dir.directoryHandle.name}
                 onClick={openDir(dir)}
               >
-                <ListItemButton>
-                  <ListItemIcon>
-                    <Folder />
-                  </ListItemIcon>
-                  <ListItemText primary={dir.directoryHandle.name} />
-                </ListItemButton>
-              </ListItem>
+                <div className={styles.icon}>
+                  <Folder />
+                </div>
+                <div className={styles.name}>{dir.directoryHandle.name}</div>
+              </div>
             ))}
             {dir.files.map((file) => (
-              <ListItem
-                disablePadding
+              <div
+                className={classNames(styles.element, {
+                  [styles.selected]: currentFile?.entity.name === file.name,
+                })}
                 key={file.name}
                 onClick={() => readFile(file.entry)}
-                selected={currentFile?.entity.name === file.name}
               >
-                <ListItemButton>
-                  <ListItemIcon>
-                    <FileOpen />
-                  </ListItemIcon>
-                  <ListItemText primary={file.name} />
-
-                  <ListItemSecondaryAction onClick={open}>
-                    <MenuOpen />
-                  </ListItemSecondaryAction>
-                </ListItemButton>
-              </ListItem>
+                <div className={styles.icon}>
+                  <LanguageLogo fileName={file.name} />
+                </div>
+                <div className={styles.name}>{file.name}</div>
+                {currentFile?.entity.name === file.name ? (
+                  <div
+                    className={classNames(styles.suffix, {
+                      [styles.updated]: isModified,
+                    })}
+                  >
+                    *
+                  </div>
+                ) : null}
+              </div>
             ))}
           </List>
         </Box>

@@ -3,6 +3,7 @@ import { FileType } from "../dtos/FileType";
 type FileInfo = {
   type: FileType;
   language?: string;
+  framework?: string;
   extension: string;
 };
 
@@ -30,28 +31,36 @@ export function getFileInfo(fileName?: string, size = 0): FileInfo {
 
   const name = rest.join(".");
 
-  let language =
-    {
-      ts: "typescript",
-      tsx: "typescript",
-      js: "javascript",
-      json: "json",
-      cpp: "cpp",
-      h: "cpp",
-      md: "markdown",
-      css: "css",
-      scss: "css",
-    }[extension] || "";
+  let language = {
+    ts: "typescript",
+    tsx: "typescript",
+    js: "javascript",
+    cjs: "javascript",
+    mjs: "javascript",
+    json: "json",
+    cpp: "cpp",
+    h: "cpp",
+    md: "markdown",
+    css: "css",
+    scss: "css",
+    gitignore: "git",
+  }[extension];
 
   if (name.includes("CMake")) {
     language = "cpp";
-  } else if (name === ".gitignore") {
-    language = "git";
   }
 
+  const framework = {
+    jsx: "react",
+    tsx: "react",
+    vue: "vue",
+    vuex: "vue",
+  }[extension];
+
   return {
-    type: "code",
-    language,
+    type: extension === "txt" ? "text" : "code",
+    language: language || extension,
+    framework,
     extension,
   };
 }

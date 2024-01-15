@@ -1,8 +1,7 @@
-import { astPlugin } from "./plugins/js/astPlugin";
+import { EditorPluginsManager } from "./plugins/EditorPluginsManager";
+import { registerKeyboardPlugin } from "./plugins/common/keyboardPlugin";
 import { mdPreviewPlugin } from "./plugins/md/mdPreviewPlugin";
-import { cursorPlugin } from "./plugins/view/cursor/cursorPlugin";
 import { hePlugin } from "./plugins/view/highlight/hePlugin";
-import { highLighterPlugin } from "./plugins/view/highlighter/hightLighterPlugin";
 
 import { IPlugin } from "../dtos/IPlugin";
 
@@ -18,35 +17,31 @@ interface Watcher {
 export class Editor {
   private text: string;
   private watchers: Watcher[] = [];
-  private cursorPosition = 0;
   private selectionStart = -1;
   private selectionEnd = -1;
-  private plugins: IPlugin[] = [
-    // astPlugin,
-    highLighterPlugin,
-    hePlugin,
-    // cursorPlugin,
-    mdPreviewPlugin,
-  ];
+  private plugins: IPlugin[] = [hePlugin, mdPreviewPlugin];
+  private pluginsManager: EditorPluginsManager;
+  private field: HTMLTextAreaElement | undefined;
 
   constructor(
-    private base: string,
+    public readonly base: string,
     private language: string,
     watcher?: Watcher
   ) {
+    this.pluginsManager = new EditorPluginsManager(this);
+    this.pluginsManager.addPlugin(registerKeyboardPlugin);
+
     this.text = base;
+    this.setSelection();
 
     if (watcher) {
       this.watchers.push(watcher);
-      watcher({
-        text: base,
-        originalText: base,
-        base,
-      });
+      this.update();
     }
   }
 
-  public updateText(value: string) {
+  public updateText(value: string, cursorPosition: number) {
+    this.setSelection(cursorPosition, cursorPosition);
     this.text = value;
     this.setSelection(undefined, undefined);
     this.update();
@@ -57,15 +52,17 @@ export class Editor {
     this.update();
   }
 
-  private update() {
+  public update(plugins?: IPlugin[]) {
     let text = this.text;
     let cursorPosition = this.cursorPosition;
     let selectionStart = this.selectionStart;
     let selectionEnd = this.selectionEnd;
     let preview: string | undefined;
-    const originalText = text;
+    let originalText = text;
 
-    for (const plugin of this.plugins) {
+    const _plugins = plugins ? [...plugins, ...this.plugins] : this.plugins;
+
+    for (const plugin of _plugins) {
       const result = plugin(
         text,
         {
@@ -76,49 +73,48 @@ export class Editor {
         },
         originalText
       );
+      originalText = result.originalText;
       text = result.text;
-      if (result.options?.cursorPosition) {
-        cursorPosition = result.options?.cursorPosition;
-      }
-      if (result.options?.selectionStart) {
-        selectionStart = result.options?.selectionStart;
-      }
-      if (result.options?.selectionEnd) {
-        selectionEnd = result.options?.selectionEnd;
-      }
+      cursorPosition = result.options.cursorPosition;
+      selectionStart = result.options.selectionStart;
+      selectionEnd = result.options.selectionEnd;
+
       preview = result.previewText;
     }
 
     for (const watcher of this.watchers) {
       watcher({
         text,
-        originalText: this.text,
+        originalText,
         base: this.base,
         preview,
       });
     }
+    this.text = originalText;
+
+    this.setSelection(cursorPosition, cursorPosition);
+
+    setTimeout(() => {
+      if (plugins?.length && this.field) {
+        this.field.value = originalText;
+        this.field.setSelectionRange(this.cursorPosition, this.cursorPosition);
+      }
+    }, 0);
   }
 
-  public setCursorPosition(position: number) {
-    const needUpdate = this.cursorPosition !== position;
-    this.cursorPosition = position;
-
-    if (needUpdate) {
-      this.update();
-    }
+  get cursorPosition() {
+    return this.selectionStart;
   }
 
   public setSelection(
-    start: number | undefined = -1,
-    end: number | undefined = -1
+    start: number | undefined = 0,
+    end: number | undefined = 0
   ) {
-    const needUpdate =
-      this.selectionStart !== start || this.selectionEnd !== end;
     this.selectionStart = start;
     this.selectionEnd = end;
+  }
 
-    if (needUpdate) {
-      this.update();
-    }
+  setField(field?: HTMLTextAreaElement) {
+    this.field = field;
   }
 }

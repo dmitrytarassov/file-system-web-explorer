@@ -6,6 +6,11 @@
     flex-direction: column;
 }
 
+.md_container img {
+    width: 100%;
+    margin-bottom: 1rem;
+}
+
 .md_container h1, .md_container h2, .md_container h3, .md_container p, .md_container ul {
     margin-bottom: 1em;
 }

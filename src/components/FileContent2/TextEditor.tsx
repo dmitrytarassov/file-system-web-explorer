@@ -6,7 +6,6 @@ import React, { useRef } from "react";
 import styles from "./styles.module.css";
 
 import { useFileEditor } from "../../hooks/useFileEditor";
-import { Editor } from "../../utils/Editor";
 
 type TextEditorProps = {
   //
@@ -21,8 +20,11 @@ export const TextEditor: React.FC<TextEditorProps> = () => {
   const onChangeHandler: React.ChangeEventHandler<HTMLTextAreaElement> = (
     e
   ) => {
+    console.log("onChangeHandler");
     if (editor) {
-      editor.updateText(e.currentTarget.value);
+      const position = fieldRef?.current?.selectionStart;
+
+      editor.updateText(e.currentTarget.value, position || 0);
     }
   };
 
@@ -35,52 +37,35 @@ export const TextEditor: React.FC<TextEditorProps> = () => {
     }
   };
 
-  const watchCursor = (element: HTMLTextAreaElement, editor: Editor) => {
-    const interval = setInterval(() => {
-      if (editor) {
-        const { selectionStart, selectionEnd } = element;
-
-        const [a, b] =
-          selectionStart === selectionEnd
-            ? [undefined, undefined]
-            : selectionEnd > selectionStart
-            ? [selectionStart, selectionEnd]
-            : [selectionEnd, selectionStart];
-
-        editor.setSelection(a, b);
-        editor.setCursorPosition(element.selectionStart);
-      }
-    }, 100);
-
-    return () => {
-      clearInterval(interval);
-    };
+  const syncPosition = () => {
+    if (fieldRef?.current && editor) {
+      editor.setSelection(
+        fieldRef.current.selectionStart,
+        fieldRef.current.selectionEnd
+      );
+    }
   };
 
   React.useEffect(() => {
-    let watcher: () => void;
     if (fieldRef?.current && editor) {
-      watcher = watchCursor(fieldRef.current, editor);
       fieldRef.current.addEventListener("scroll", sync);
+      fieldRef.current?.addEventListener("keyup", syncPosition);
+      fieldRef.current?.addEventListener("click", syncPosition);
     }
     return () => {
       if (fieldRef?.current) {
         fieldRef.current.removeEventListener("scroll", sync);
-      }
-
-      if (watcher) {
-        watcher();
+        fieldRef.current?.removeEventListener("keyup", syncPosition);
+        fieldRef.current?.removeEventListener("click", syncPosition);
       }
     };
   }, [fieldRef, editor]);
 
   React.useEffect(() => {
-    if (fieldRef?.current) {
-      fieldRef?.current?.focus();
+    if (editor) {
+      editor.setField(fieldRef.current);
     }
-  }, [editorText]);
-
-  console.log(preview);
+  }, [editor, fieldRef?.current]);
 
   return (
     <div

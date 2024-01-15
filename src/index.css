@@ -14,8 +14,13 @@ code {
 
 :root {
   --color-gray-main: #191919;
+  --color-gray-active: #333;
+  --color-gray-focus: #222;
   --color-link: #90caf9;
   --color-link-hover: #3981bc;
+
+  --color-info-regular: darkseagreen;
+  --color-info-accent: coral;
 }
 
 

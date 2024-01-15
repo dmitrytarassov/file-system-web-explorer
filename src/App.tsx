@@ -27,7 +27,6 @@ function App() {
         <ThemeProvider theme={darkTheme}>
           <CssBaseline />
           <Dashboard />
-
           <ErrorModal />
         </ThemeProvider>
       </LocalFilesProvider>

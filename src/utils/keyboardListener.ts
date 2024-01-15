@@ -45,8 +45,16 @@ export class KeyboardListener {
   }
 
   on(key: string, options: string[][] = [], fn: VoidFn) {
-    for (const _options of options) {
-      const listeners = this.getListeners(key, _options);
+    if (options.length) {
+      for (const _options of options) {
+        const listeners = this.getListeners(key, _options);
+
+        if (!listeners.has(fn)) {
+          listeners.add(fn);
+        }
+      }
+    } else {
+      const listeners = this.getListeners(key, []);
 
       if (!listeners.has(fn)) {
         listeners.add(fn);
@@ -55,8 +63,16 @@ export class KeyboardListener {
   }
 
   off(key: string, options: string[][], fn: VoidFn) {
-    for (const _options of options) {
-      const listeners = this.getListeners(key, _options);
+    if (options.length) {
+      for (const _options of options) {
+        const listeners = this.getListeners(key, _options);
+
+        if (listeners.has(fn)) {
+          listeners.delete(fn);
+        }
+      }
+    } else {
+      const listeners = this.getListeners(key, []);
 
       if (listeners.has(fn)) {
         listeners.delete(fn);
@@ -79,6 +95,8 @@ export class KeyboardListener {
   }
 
   private getKeyName(key: string, options: string[]): string {
-    return `${options.sort((a, b) => (a > b ? 1 : -1)).join("_")}_${key}`;
+    return `${options
+      .sort((a, b) => (a > b ? 1 : -1))
+      .join("_")}_${key}`.toLowerCase();
   }
 }
